@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as zod from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Play } from "phosphor-react";
 import { Cycle } from "../../models/Cycle";
+import { differenceInSeconds } from "date-fns";
+
 import {
   CountownContainer,
   FormContainer,
@@ -57,13 +59,37 @@ export function Home() {
       id,
       task: data.task,
       minutesAmount: data.minutesAmount,
+      startDate: new Date(),
     };
 
     setCycles((state) => [...state, newCycle]);
     setActiveCycleId(id);
+    setAmountSecondsPassed(0);
 
     reset();
   }
+
+  useEffect(() => {
+    let interval: number;
+
+    if (activeCycle) {
+      interval = setInterval(() => {
+        setAmountSecondsPassed(
+          differenceInSeconds(new Date(), activeCycle.startDate)
+        );
+      }, 1000);
+    }
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [activeCycle]);
+
+  useEffect(() => {
+    if (activeCycle) {
+      document.title = `${minutes}:${seconds}`;
+    }
+  }, [minutes, seconds, activeCycle]);
 
   return (
     <HomeContainer>
